@@ -1,9 +1,10 @@
+import { useState, useEffect } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import AppRoutes from './routes';
 import { AuthProvider } from './context/AuthContext';
-
+import Loader from './components/common/Loader';
 const theme = createTheme({
   palette: {
     primary: {
@@ -48,14 +49,27 @@ const theme = createTheme({
 });
 
 function App() {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <AuthProvider>
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-      </AuthProvider>
+      {loading ? (
+        <Loader />
+      ) : (
+        <AuthProvider>
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </AuthProvider>
+      )}
     </ThemeProvider>
   );
 }

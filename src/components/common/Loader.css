@@ -1,0 +1,77 @@
+.loader-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    inset: 0;
+    background-color: #f4f6f8;
+    z-index: 9999;
+}
+
+.loader-bars {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    height: 150px;
+    width: 250px;
+    gap: 10px;
+    border-bottom: 4px solid #bbdffd;
+    padding-bottom: 5px;
+    box-shadow: 0 5px 5px -5px rgba(0, 0, 0, 0.1);
+    /* slight shadow on the line */
+}
+
+/* Base pill shape */
+.loader-bar {
+    width: 38px;
+    background: linear-gradient(135deg, #ffffff, #c7e5ff, #a6d4fa);
+    border-radius: 20px;
+    box-shadow:
+        inset -3px -3px 8px rgba(0, 0, 0, 0.1),
+        inset 3px 3px 8px rgba(255, 255, 255, 0.9),
+        2px 4px 6px rgba(0, 0, 0, 0.15);
+    transform-origin: bottom center;
+    animation: pulse 0.5s infinite alternate ease-in-out;
+}
+
+/* Specific heights and rotations based on the image */
+.loader-bar:nth-child(1) {
+    height: 60px;
+    transform: rotate(-40deg) translateX(-10px) translateY(5px);
+    animation-delay: 0s;
+}
+
+.loader-bar:nth-child(2) {
+    height: 100px;
+    transform: rotate(-15deg) translateX(-3px);
+    animation-delay: 0.2s;
+}
+
+.loader-bar:nth-child(3) {
+    height: 120px;
+    transform: rotate(0deg);
+    animation-delay: 0.4s;
+}
+
+.loader-bar:nth-child(4) {
+    height: 100px;
+    transform: rotate(15deg) translateX(3px);
+    animation-delay: 0.2s;
+}
+
+.loader-bar:nth-child(5) {
+    height: 60px;
+    transform: rotate(40deg) translateX(10px) translateY(5px);
+    animation-delay: 0.8s;
+}
+
+@keyframes pulse {
+    0% {
+        filter: brightness(1) drop-shadow(0 0 0 transparent);
+    }
+
+    100% {
+        filter: brightness(1.1) drop-shadow(0 0 10px rgba(166, 212, 250, 0.4));
+    }
+}

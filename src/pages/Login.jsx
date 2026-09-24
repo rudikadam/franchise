@@ -71,7 +71,7 @@ export default function Login() {
                     </form>
 
                     <p className="lg-foot">
-                        Don&apos;t have an account? <a href="#create">Create one</a>
+                        Don&apos;t have an account? 
                     </p>
                 </div>
             </div>

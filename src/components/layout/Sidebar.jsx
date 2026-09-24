@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Box, Drawer, List, ListItem, ListItemIcon, ListItemText, Typography, useTheme, IconButton } from '@mui/material';
+import { Box, Drawer, List, ListItem, ListItemIcon, ListItemText, Typography, useTheme, IconButton, Avatar } from '@mui/material';
 import {
     LayoutDashboard, PlusSquare, List as ListIcon, Bell, Users, Building2, Gavel, User, LogOut, FileText, XCircle, CheckCircle
 } from 'lucide-react';
@@ -47,7 +47,7 @@ export default function Sidebar({ open, toggleSidebar }) {
         <Drawer
             variant="permanent"
             sx={{
-                width: open ? drawerWidth : 80,
+                width: open ? drawerWidth + 16 : 80 + 16,
                 flexShrink: 0,
                 transition: theme.transitions.create('width', {
                     easing: theme.transitions.easing.easeInOut,
@@ -55,11 +55,18 @@ export default function Sidebar({ open, toggleSidebar }) {
                 }),
                 '& .MuiDrawer-paper': {
                     position: 'relative',
-                    height: '100%',
+                    height: 'calc(100vh - 120px)',
+                    margin: '0 0 16px 16px',
+                    borderRadius: '32px',
                     width: open ? drawerWidth : 80,
                     boxSizing: 'border-box',
-                    borderRight: 'none',
-                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    background: 'rgba(255, 255, 255, 0.65)',
+                    backdropFilter: 'blur(28px) saturate(160%)',
+                    border: '1px solid rgba(255,255,255,0.7)',
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.1), inset 0 1px 1px rgba(255,255,255,1)',
+                    color: '#333',
                     transition: theme.transitions.create('width', {
                         easing: theme.transitions.easing.easeInOut,
                         duration: 300,
@@ -82,12 +89,15 @@ export default function Sidebar({ open, toggleSidebar }) {
                             key={item.id}
                             sx={{
                                 mb: 1,
-                                borderRadius: 2,
-                                bgcolor: active ? theme.palette.primary.light : 'transparent',
-                                color: active ? theme.palette.primary.main : 'text.primary',
+                                borderRadius: '16px',
+                                bgcolor: active ? 'rgba(0,0,0,0.05)' : 'transparent',
+                                color: active ? theme.palette.primary.main : '#333',
+                                border: active ? '1px solid rgba(0,0,0,0.05)' : '1px solid transparent',
                                 justifyContent: open ? 'initial' : 'center',
+                                transition: 'all 0.3s ease',
                                 '&:hover': {
-                                    bgcolor: theme.palette.primary.light,
+                                    bgcolor: 'rgba(0,0,0,0.05)',
+                                    borderColor: 'rgba(0,0,0,0.05)',
                                     color: theme.palette.primary.main,
                                     '& .MuiListItemIcon-root': {
                                         color: theme.palette.primary.main,
@@ -99,7 +109,8 @@ export default function Sidebar({ open, toggleSidebar }) {
                                 minWidth: 0,
                                 mr: open ? 2 : 0,
                                 justifyContent: 'center',
-                                color: active ? theme.palette.primary.main : 'text.secondary'
+                                color: active ? theme.palette.primary.main : 'rgba(0,0,0,0.6)',
+                                transition: 'all 0.3s ease'
                             }}>
                                 {item.icon}
                             </ListItemIcon>
@@ -112,7 +123,7 @@ export default function Sidebar({ open, toggleSidebar }) {
                                     whiteSpace: 'nowrap',
                                     transition: 'all 0.3s ease-in-out'
                                 }}
-                                primaryTypographyProps={{ fontWeight: active ? 600 : 400 }}
+                                primaryTypographyProps={{ fontWeight: active ? 600 : 500, fontSize: '15px' }}
                             />
                         </ListItem>
                     );
@@ -121,56 +132,91 @@ export default function Sidebar({ open, toggleSidebar }) {
 
             <Box sx={{ flexGrow: 1 }} />
 
-            <List sx={{ px: 2, mb: 1 }}>
-                <ListItem
-                    button
-                    component={Link}
-                    to="/profile"
+            <Box sx={{ p: open ? 2 : 1, mb: 1, transition: 'padding 0.3s ease' }}>
+                <Box
                     sx={{
-                        mb: 1,
-                        borderRadius: 2,
-                        bgcolor: location.pathname.startsWith('/profile') ? theme.palette.primary.light : 'transparent',
-                        color: location.pathname.startsWith('/profile') ? theme.palette.primary.main : 'text.primary',
-                        justifyContent: open ? 'initial' : 'center',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: open ? 'space-between' : 'center',
+                        flexDirection: open ? 'row' : 'column',
+                        p: open ? 1.5 : 1,
+                        borderRadius: '16px',
+                        bgcolor: 'rgba(255,255,255,0.4)',
+                        border: '1px solid rgba(0,0,0,0.06)',
+                        boxShadow: 'inset 0 1px 1px rgba(255,255,255,1), 0 4px 15px rgba(0,0,0,0.03)',
+                        transition: 'all 0.3s ease',
                         '&:hover': {
-                            bgcolor: theme.palette.primary.light,
-                            color: theme.palette.primary.main,
-                            '& .MuiListItemIcon-root': { color: theme.palette.primary.main }
-                        },
+                            bgcolor: 'rgba(255,255,255,0.7)',
+                            borderColor: 'rgba(0,0,0,0.1)'
+                        }
                     }}
                 >
-                    <ListItemIcon sx={{ minWidth: 0, mr: open ? 2 : 0, justifyContent: 'center', color: location.pathname.startsWith('/profile') ? theme.palette.primary.main : 'text.secondary' }}>
-                        <User size={20} />
-                    </ListItemIcon>
-                    <ListItemText
-                        primary="Profile"
-                        sx={{ opacity: open ? 1 : 0, width: open ? 'auto' : 0, overflow: 'hidden', whiteSpace: 'nowrap', transition: 'all 0.3s ease-in-out' }}
-                        primaryTypographyProps={{ fontWeight: location.pathname.startsWith('/profile') ? 600 : 400 }}
-                    />
-                </ListItem>
+                    <Box
+                        component={Link}
+                        to="/profile"
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            textDecoration: 'none',
+                            color: 'inherit',
+                            flexGrow: 1,
+                            overflow: 'hidden',
+                            minWidth: 0,
+                            mr: open ? 1 : 0
+                        }}
+                    >
+                        <Avatar
+                            sx={{
+                                width: open ? 40 : 36,
+                                height: open ? 40 : 36,
+                                bgcolor: 'primary.main',
+                                color: '#fff',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                                fontSize: open ? '1.2rem' : '1rem',
+                                transition: 'all 0.3s ease',
+                                flexShrink: 0
+                            }}
+                        >
+                            {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                        </Avatar>
 
-                <ListItem
-                    button
-                    onClick={logout}
-                    sx={{
-                        borderRadius: 2,
-                        color: 'error.main',
-                        justifyContent: open ? 'initial' : 'center',
-                        '&:hover': {
-                            bgcolor: 'error.light',
-                            '& .MuiListItemIcon-root': { color: 'error.dark' }
-                        },
-                    }}
-                >
-                    <ListItemIcon sx={{ minWidth: 0, mr: open ? 2 : 0, justifyContent: 'center', color: 'error.main', transition: 'color 0.2s' }}>
-                        <LogOut size={20} />
-                    </ListItemIcon>
-                    <ListItemText
-                        primary="Logout"
-                        sx={{ opacity: open ? 1 : 0, width: open ? 'auto' : 0, overflow: 'hidden', whiteSpace: 'nowrap', transition: 'all 0.3s ease-in-out' }}
-                    />
-                </ListItem>
-            </List>
+                        <Box sx={{
+                            ml: 1.5,
+                            display: open ? 'block' : 'none',
+                            minWidth: 0,
+                            overflow: 'hidden'
+                        }}>
+                            <Typography variant="subtitle2" fontWeight="700" color="#333" noWrap title={user?.name || 'My Profile'}>
+                                {user?.name || 'My Profile'}
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: 'rgba(0,0,0,0.6)', textTransform: 'capitalize' }} noWrap>
+                                {user?.role || 'View Account'}
+                            </Typography>
+                        </Box>
+                    </Box>
+
+                    <IconButton
+                        onClick={logout}
+                        title="Logout"
+                        sx={{
+                            mt: open ? 0 : 1.5,
+                            flexShrink: 0,
+                            bgcolor: 'rgba(211,47,47,0.08)',
+                            color: '#d32f2f',
+                            border: '1px solid rgba(211,47,47,0.2)',
+                            transition: 'all 0.3s ease',
+                            p: 1,
+                            '&:hover': {
+                                bgcolor: 'rgba(211,47,47,0.2)',
+                                transform: 'scale(1.05)',
+                                color: '#c62828'
+                            }
+                        }}
+                    >
+                        <LogOut size={open ? 18 : 20} />
+                    </IconButton>
+                </Box>
+            </Box>
         </Drawer>
     );
 }
