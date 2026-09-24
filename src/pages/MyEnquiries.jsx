@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
     Box, Card, Typography, TextField, InputAdornment, Button,
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TablePagination,
-    IconButton, Chip
+    IconButton, Chip, Tabs, Tab, Select, MenuItem, FormControl, InputLabel
 } from '@mui/material';
 import { Search, Plus, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const mockEnquiries = [];
+// mockEnquiries removed in favor of real data
 
 const getStatusColor = (status) => {
     switch (status) {
@@ -22,6 +23,45 @@ const getStatusColor = (status) => {
 export default function MyEnquiries() {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
+    const [enquiries, setEnquiries] = useState([]);
+    const [totalCount, setTotalCount] = useState(0);
+    const [search, setSearch] = useState('');
+    const [type, setType] = useState('all');
+    const [statusFilter, setStatusFilter] = useState('');
+    const [loading, setLoading] = useState(true);
+
+    const fetchEnquiries = async () => {
+        setLoading(true);
+        try {
+            const token = localStorage.getItem("token");
+            const res = await axios.get(
+                `${import.meta.env.VITE_API_URL}/api/franchise/enquiries`,
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                    params: {
+                        page: page + 1, // backend typically expects 1-indexed page
+                        limit: rowsPerPage,
+                        ...(search && { search }),
+                        ...(type !== 'all' && { type }),
+                        ...(statusFilter && { status: statusFilter })
+                    }
+                }
+            );
+            setEnquiries(res.data?.data || res.data?.enquiries || []);
+            setTotalCount(res.data?.pagination?.total || res.data?.total || res.data?.totalCount || res.data?.data?.length || 0);
+        } catch (err) {
+            console.error("Error fetching enquiries:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            fetchEnquiries();
+        }, 300); // debounce search
+        return () => clearTimeout(timeoutId);
+    }, [page, rowsPerPage, search, type, statusFilter]);
 
     const handleChangePage = (event, newPage) => setPage(newPage);
     const handleChangeRowsPerPage = (event) => {
@@ -31,23 +71,48 @@ export default function MyEnquiries() {
 
     return (
         <Card>
-            <Box sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee' }}>
-                <Typography variant="h6" fontWeight="bold">My Enquiries</Typography>
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                    <TextField
-                        size="small"
-                        placeholder="Search enquiries..."
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <Search size={18} />
-                                </InputAdornment>
-                            ),
-                        }}
-                    />
+            <Box sx={{ p: 3, borderBottom: '1px solid #eee' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h6" fontWeight="bold">My Enquiries</Typography>
                     <Button component={Link} to="/enquiries/create" variant="contained" color="primary" startIcon={<Plus size={18} />}>
                         Create Enquiry
                     </Button>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Tabs value={type} onChange={(e, newVal) => { setType(newVal); setPage(0); }} sx={{ minHeight: 40 }}>
+                        <Tab label="All" value="all" sx={{ minHeight: 40, py: 0 }} />
+                        <Tab label="Own Created" value="own" sx={{ minHeight: 40, py: 0 }} />
+                        <Tab label="Assigned" value="assigned" sx={{ minHeight: 40, py: 0 }} />
+                    </Tabs>
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                        <FormControl size="small" sx={{ minWidth: 150 }}>
+                            <InputLabel>Status</InputLabel>
+                            <Select
+                                value={statusFilter}
+                                label="Status"
+                                onChange={(e) => { setStatusFilter(e.target.value); setPage(0); }}
+                            >
+                                <MenuItem value=""><em>All</em></MenuItem>
+                                <MenuItem value="New">New</MenuItem>
+                                <MenuItem value="Price Updated">Price Updated</MenuItem>
+                                <MenuItem value="Bidding In Progress">Bidding In Progress</MenuItem>
+                                <MenuItem value="In Process">In Process</MenuItem>
+                            </Select>
+                        </FormControl>
+                        <TextField
+                            size="small"
+                            placeholder="Search enquiries..."
+                            value={search}
+                            onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <Search size={18} />
+                                    </InputAdornment>
+                                ),
+                            }}
+                        />
+                    </Box>
                 </Box>
             </Box>
 
@@ -65,36 +130,53 @@ export default function MyEnquiries() {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {mockEnquiries.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                            const statusColor = getStatusColor(row.status);
-                            return (
-                                <TableRow key={row.id} hover>
-                                    <TableCell fontWeight="600">{row.id}</TableCell>
-                                    <TableCell>{row.customer}</TableCell>
-                                    <TableCell>{row.vehicle}</TableCell>
-                                    <TableCell>
-                                        <Chip
-                                            label={row.status}
-                                            size="small"
-                                            sx={{
-                                                bgcolor: statusColor.bg,
-                                                color: statusColor.color,
-                                                fontWeight: 600
-                                            }}
-                                        />
-                                    </TableCell>
-                                    <TableCell sx={{ fontWeight: row.highestBid !== 'N/A' ? 'bold' : 'normal' }}>
-                                        {row.highestBid}
-                                    </TableCell>
-                                    <TableCell>{row.lastUpdated}</TableCell>
-                                    <TableCell align="right">
-                                        <IconButton component={Link} to={`/enquiries/${row.id}`} size="small">
-                                            <Eye size={18} />
-                                        </IconButton>
-                                    </TableCell>
-                                </TableRow>
-                            );
-                        })}
+                        {loading ? (
+                            <TableRow>
+                                <TableCell colSpan={7} align="center" sx={{ py: 3 }}>Loading...</TableCell>
+                            </TableRow>
+                        ) : enquiries.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={7} align="center" sx={{ py: 3 }}>No enquiries found.</TableCell>
+                            </TableRow>
+                        ) : (
+                            enquiries.map((row) => {
+                                const statusColor = getStatusColor(row.status);
+                                // Default mapped fields since backend model might differ slightly
+                                const id = row._id || row.id;
+                                const customer = row.customerName || row.customer || 'Unknown';
+                                const vehicle = row.vehicleName || row.vehicle || 'Unknown';
+                                const highestBid = row.highestBid || 'N/A';
+                                const lastUpdated = row.updatedAt ? new Date(row.updatedAt).toLocaleDateString() : (row.lastUpdated || 'N/A');
+
+                                return (
+                                    <TableRow key={id} hover>
+                                        <TableCell fontWeight="600">{row.enquiryId || id.slice(-6)}</TableCell>
+                                        <TableCell>{customer}</TableCell>
+                                        <TableCell>{vehicle}</TableCell>
+                                        <TableCell>
+                                            <Chip
+                                                label={row.status}
+                                                size="small"
+                                                sx={{
+                                                    bgcolor: statusColor.bg,
+                                                    color: statusColor.color,
+                                                    fontWeight: 600
+                                                }}
+                                            />
+                                        </TableCell>
+                                        <TableCell sx={{ fontWeight: highestBid !== 'N/A' ? 'bold' : 'normal' }}>
+                                            {highestBid}
+                                        </TableCell>
+                                        <TableCell>{lastUpdated}</TableCell>
+                                        <TableCell align="right">
+                                            <IconButton component={Link} to={`/enquiries/${id}`} size="small">
+                                                <Eye size={18} />
+                                            </IconButton>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })
+                        )}
                     </TableBody>
                 </Table>
             </TableContainer>
@@ -102,7 +184,7 @@ export default function MyEnquiries() {
             <TablePagination
                 rowsPerPageOptions={[5, 10, 25]}
                 component="div"
-                count={mockEnquiries.length}
+                count={totalCount}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 onPageChange={handleChangePage}

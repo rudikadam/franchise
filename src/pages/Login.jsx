@@ -19,14 +19,12 @@ export default function Login() {
     try {
       const response = await apiClient.post('api/franchise/login', { email, password });
 
-      // Expected to return accessToken & refreshToken
-      if (response.data && response.data.accessToken) {
-        // Adjust this depending on your AuthContext / apiClient setup
-        localStorage.setItem('token', response.data.accessToken);
-        localStorage.setItem('refreshToken', response.data.refreshToken);
-      }
+      // Extract tokens robustly depending on backend response format
+      const token = response.data?.accessToken || response.data?.token || response.data?.data?.accessToken || response.data?.data?.token;
+      const refreshToken = response.data?.refreshToken || response.data?.data?.refreshToken;
 
-      login('franchise');
+      // Pass tokens to AuthContext login which will handle localStorage
+      login('franchise', token, refreshToken);
       navigate('/dashboard');
     } catch (err) {
       if (err.response && err.response.status === 401) {

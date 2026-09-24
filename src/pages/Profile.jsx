@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Box, Card, Typography, Avatar, Grid, Button, Divider, IconButton } from '@mui/material';
+import { Box, Card, Typography, Avatar, Grid, Button, Divider, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, CircularProgress } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 import { Mail, Phone, MapPin, Building2, Calendar, ArrowLeft, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -22,26 +22,68 @@ export default function Profile() {
     const [profileData, setProfileData] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchProfile = async () => {
-            try {
-                const token = localStorage.getItem("adminToken") || localStorage.getItem("token");
-                const res = await axios.get(
-                    `${import.meta.env.VITE_API_URL || 'https://api.bidndrive.in'}/api/admin/profile`,
-                    {
-                        headers: { Authorization: `Bearer ${token}` }
-                    }
-                );
-                setProfileData(res.data.data);
-            } catch (err) {
-                console.error("Error fetching profile:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
+    const [editModalOpen, setEditModalOpen] = useState(false);
+    const [editData, setEditData] = useState({});
+    const [saving, setSaving] = useState(false);
 
+    const fetchProfile = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const res = await axios.get(
+                `${import.meta.env.VITE_API_URL}/api/franchise/profile`,
+                {
+                    headers: { Authorization: `Bearer ${token}` }
+                }
+            );
+            const fetchedData = res.data?.data || res.data?.franchise || res.data;
+            setProfileData(fetchedData);
+        } catch (err) {
+            console.error("Error fetching profile:", err);
+            // Ignore error for visual functionality if needed
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchProfile();
     }, []);
+
+    const handleEditClick = () => {
+        const profile = profileData || {};
+        setEditData({
+            firstName: profile.firstName || '',
+            lastName: profile.lastName || '',
+            phone: profile.phone || '',
+            city: profile.city || '',
+            address: profile.address || '',
+            businessName: profile.businessName || profile.franchiseName || '',
+        });
+        setEditModalOpen(true);
+    };
+
+    const handleEditChange = (e) => {
+        setEditData({ ...editData, [e.target.name]: e.target.value });
+    };
+
+    const handleSaveProfile = async () => {
+        setSaving(true);
+        try {
+            const token = localStorage.getItem("token");
+            await axios.put(
+                `${import.meta.env.VITE_API_URL}/api/franchise/profile`,
+                editData,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            await fetchProfile(); // re-fetch profile data
+            setEditModalOpen(false);
+        } catch (err) {
+            console.error("Error updating profile:", err);
+            alert("Failed to update profile");
+        } finally {
+            setSaving(false);
+        }
+    };
 
     if (loading) {
         return <Loader />;
@@ -86,13 +128,15 @@ export default function Profile() {
                                     {profile?.role || user?.role} Account
                                 </Typography>
                             </Box>
-                            <Button sx={{
-                                borderRadius: '16px',
-                                bgcolor: 'rgba(0,0,0,0.05)',
-                                border: '1px solid rgba(0,0,0,0.1)',
-                                color: '#333',
-                                '&:hover': { bgcolor: 'rgba(0,0,0,0.1)' }
-                            }}>
+                            <Button
+                                onClick={handleEditClick}
+                                sx={{
+                                    borderRadius: '16px',
+                                    bgcolor: 'rgba(0,0,0,0.05)',
+                                    border: '1px solid rgba(0,0,0,0.1)',
+                                    color: '#333',
+                                    '&:hover': { bgcolor: 'rgba(0,0,0,0.1)' }
+                                }}>
                                 Edit Profile
                             </Button>
                         </Box>
@@ -186,6 +230,48 @@ export default function Profile() {
                     </Card>
                 </Grid>
             </Grid>
+
+            {/* Edit Profile Dialog */}
+            <Dialog
+                open={editModalOpen}
+                onClose={() => !saving && setEditModalOpen(false)}
+                PaperProps={{
+                    sx: {
+                        borderRadius: '24px',
+                        padding: 2,
+                        background: 'rgba(255, 255, 255, 0.9)',
+                        backdropFilter: 'blur(16px)',
+                    }
+                }}
+            >
+                <DialogTitle sx={{ fontWeight: 'bold' }}>Edit Profile</DialogTitle>
+                <DialogContent>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1, minWidth: { sm: 400 } }}>
+                        <TextField label="First Name" name="firstName" value={editData.firstName} onChange={handleEditChange} fullWidth />
+                        <TextField label="Last Name" name="lastName" value={editData.lastName} onChange={handleEditChange} fullWidth />
+                        <TextField label="Phone" name="phone" value={editData.phone} onChange={handleEditChange} fullWidth />
+                        <TextField label="City" name="city" value={editData.city} onChange={handleEditChange} fullWidth />
+                        <TextField label="Address" name="address" value={editData.address} onChange={handleEditChange} fullWidth multiline rows={2} />
+                        <TextField label="Business Name" name="businessName" value={editData.businessName} onChange={handleEditChange} fullWidth />
+                    </Box>
+                </DialogContent>
+                <DialogActions sx={{ padding: '16px 24px' }}>
+                    <Button onClick={() => setEditModalOpen(false)} disabled={saving} sx={{ color: 'rgba(0,0,0,0.6)' }}>Cancel</Button>
+                    <Button
+                        onClick={handleSaveProfile}
+                        disabled={saving}
+                        variant="contained"
+                        sx={{
+                            borderRadius: '12px',
+                            background: 'linear-gradient(135deg, #1E88E5, #5E35B1)',
+                            color: 'white',
+                            textTransform: 'none',
+                        }}
+                    >
+                        {saving ? <CircularProgress size={24} color="inherit" /> : 'Save Changes'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 }

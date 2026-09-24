@@ -37,7 +37,7 @@ export default function FranchiseList() {
         const fetchFranchises = async () => {
             setLoading(true);
             try {
-                const response = await apiClient.get('/franchise/admin/all', {
+                const response = await apiClient.get('api/franchise/admin/all', {
                     params: {
                         page: page + 1,
                         limit: rowsPerPage,
