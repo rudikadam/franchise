@@ -169,7 +169,7 @@ export default function MyEnquiries() {
                                         </TableCell>
                                         <TableCell>{lastUpdated}</TableCell>
                                         <TableCell align="right">
-                                            <IconButton component={Link} to={`/enquiries/${id}`} size="small">
+                                            <IconButton component={Link} to={`/enquiries/${id}`} state={{ enquiry: row }} size="small">
                                                 <Eye size={18} />
                                             </IconButton>
                                         </TableCell>
