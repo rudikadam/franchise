@@ -123,6 +123,7 @@ export default function MyEnquiries() {
                             <TableCell sx={{ fontWeight: 600 }}>Enquiry ID</TableCell>
                             <TableCell sx={{ fontWeight: 600 }}>Customer</TableCell>
                             <TableCell sx={{ fontWeight: 600 }}>Vehicle</TableCell>
+                            <TableCell sx={{ fontWeight: 600 }}>Assigned To</TableCell>
                             <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
                             <TableCell sx={{ fontWeight: 600 }}>Highest Bid</TableCell>
                             <TableCell sx={{ fontWeight: 600 }}>Last Updated</TableCell>
@@ -132,11 +133,11 @@ export default function MyEnquiries() {
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={7} align="center" sx={{ py: 3 }}>Loading...</TableCell>
+                                <TableCell colSpan={8} align="center" sx={{ py: 3 }}>Loading...</TableCell>
                             </TableRow>
                         ) : enquiries.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={7} align="center" sx={{ py: 3 }}>No enquiries found.</TableCell>
+                                <TableCell colSpan={8} align="center" sx={{ py: 3 }}>No enquiries found.</TableCell>
                             </TableRow>
                         ) : (
                             enquiries.map((row) => {
@@ -145,6 +146,7 @@ export default function MyEnquiries() {
                                 const id = row._id || row.id;
                                 const customer = row.customerName || row.customer || 'Unknown';
                                 const vehicle = row.vehicleName || row.vehicle || 'Unknown';
+                                const assignedTo = row.assignedToName || (typeof row.assignedTo === 'object' ? (row.assignedTo?.name || row.assignedTo?.firstName || 'Assigned') : row.assignedTo) || 'Unassigned';
                                 const highestBid = row.highestBid || 'N/A';
                                 const lastUpdated = row.updatedAt ? new Date(row.updatedAt).toLocaleDateString() : (row.lastUpdated || 'N/A');
 
@@ -153,6 +155,24 @@ export default function MyEnquiries() {
                                         <TableCell fontWeight="600">{row.enquiryId || id.slice(-6)}</TableCell>
                                         <TableCell>{customer}</TableCell>
                                         <TableCell>{vehicle}</TableCell>
+                                        <TableCell>
+                                            <FormControl size="small" sx={{ minWidth: 120 }}>
+                                                <Select
+                                                    value={assignedTo}
+                                                    onChange={(e) => console.log(`Assign enquiry ${id} to`, e.target.value)}
+                                                    displayEmpty
+                                                    sx={{
+                                                        '& .MuiSelect-select': { py: 0.5, fontSize: '0.875rem' },
+                                                        borderRadius: 1
+                                                    }}
+                                                >
+                                                    {/* We use a Set to ensure unique values, starting with the current assignee */}
+                                                    {[...new Set([assignedTo, 'Unassigned', 'John Doe', 'Jane Smith', 'Evaluator 1'])].map(name => (
+                                                        <MenuItem key={name} value={name}>{name}</MenuItem>
+                                                    ))}
+                                                </Select>
+                                            </FormControl>
+                                        </TableCell>
                                         <TableCell>
                                             <Chip
                                                 label={row.status}
