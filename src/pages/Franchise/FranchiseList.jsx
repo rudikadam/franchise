@@ -1,33 +1,68 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     Box, Card, Typography, TextField, InputAdornment, Button,
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TablePagination,
-    IconButton, Chip, Menu, MenuItem
+    IconButton, Chip, Menu, MenuItem, CircularProgress
 } from '@mui/material';
 import { Search, Plus, MoreVertical, Edit, Trash2, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-const mockFranchises = [
-    { id: 'FR-001', name: 'Metro Motors', owner: 'Rahul Sharma', phone: '+91 9876543210', city: 'Mumbai', status: 'Active', date: '2026-01-15' },
-    { id: 'FR-002', name: 'North India Auto', owner: 'Amit Singh', phone: '+91 8765432109', city: 'Delhi', status: 'Active', date: '2026-02-20' },
-    { id: 'FR-003', name: 'South Cars Hub', owner: 'Karthik Raja', phone: '+91 7654321098', city: 'Chennai', status: 'Inactive', date: '2026-03-10' },
-    { id: 'FR-004', name: 'East Side Wheels', owner: 'Sanjay Das', phone: '+91 6543210987', city: 'Kolkata', status: 'Active', date: '2026-04-05' },
-    { id: 'FR-005', name: 'Central Auto', owner: 'Vijay Kumar', phone: '+91 5432109876', city: 'Bhopal', status: 'Active', date: '2026-05-12' },
-];
+import apiClient from '../../services/apiClient';
 
 export default function FranchiseList() {
+    const [franchises, setFranchises] = useState([]);
+    const [totalCount, setTotalCount] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [anchorEl, setAnchorEl] = useState(null);
+    const [selectedFranchiseId, setSelectedFranchiseId] = useState(null);
 
-    const handleMenuClick = (event) => setAnchorEl(event.currentTarget);
-    const handleMenuClose = () => setAnchorEl(null);
+    const handleMenuClick = (event, id) => {
+        setAnchorEl(event.currentTarget);
+        setSelectedFranchiseId(id);
+    };
+    const handleMenuClose = () => {
+        setAnchorEl(null);
+        setSelectedFranchiseId(null);
+    };
 
     const handleChangePage = (event, newPage) => setPage(newPage);
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
     };
+
+    useEffect(() => {
+        const fetchFranchises = async () => {
+            setLoading(true);
+            try {
+                const response = await apiClient.get('/franchise/admin/all', {
+                    params: {
+                        page: page + 1,
+                        limit: rowsPerPage,
+                        search: searchTerm || undefined,
+                    }
+                });
+
+                const data = response.data?.data || response.data?.franchises || response.data || [];
+                const total = response.data?.pagination?.total || response.data?.totalCount || response.data?.total || data.length || 0;
+
+                setFranchises(data);
+                setTotalCount(total);
+            } catch (error) {
+                console.error('Failed to fetch franchises:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const timeoutId = setTimeout(() => {
+            fetchFranchises();
+        }, 500);
+
+        return () => clearTimeout(timeoutId);
+    }, [page, rowsPerPage, searchTerm]);
 
     return (
         <Card>
@@ -37,6 +72,11 @@ export default function FranchiseList() {
                     <TextField
                         size="small"
                         placeholder="Search franchises..."
+                        value={searchTerm}
+                        onChange={(e) => {
+                            setSearchTerm(e.target.value);
+                            setPage(0);
+                        }}
                         InputProps={{
                             startAdornment: (
                                 <InputAdornment position="start">
@@ -45,7 +85,7 @@ export default function FranchiseList() {
                             ),
                         }}
                     />
-                    <Button variant="contained" color="primary" startIcon={<Plus size={18} />}>
+                    <Button component={Link} to="/admin/franchises/create" variant="contained" color="primary" startIcon={<Plus size={18} />}>
                         Add Franchise
                     </Button>
                 </Box>
@@ -64,45 +104,65 @@ export default function FranchiseList() {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {mockFranchises.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
-                            <TableRow key={row.id} hover>
-                                <TableCell>{row.id}</TableCell>
-                                <TableCell>
-                                    <Typography variant="subtitle2" fontWeight="600">{row.name}</Typography>
-                                    <Typography variant="body2" color="text.secondary">{row.phone}</Typography>
-                                </TableCell>
-                                <TableCell>{row.owner}</TableCell>
-                                <TableCell>{row.city}</TableCell>
-                                <TableCell>
-                                    <Chip
-                                        label={row.status}
-                                        size="small"
-                                        sx={{
-                                            bgcolor: row.status === 'Active' ? '#e8f5e9' : '#ffebee',
-                                            color: row.status === 'Active' ? '#2e7d32' : '#c62828',
-                                            fontWeight: 600
-                                        }}
-                                    />
-                                </TableCell>
-                                <TableCell align="right">
-                                    <IconButton onClick={handleMenuClick} size="small">
-                                        <MoreVertical size={18} />
-                                    </IconButton>
-                                    <Menu
-                                        anchorEl={anchorEl}
-                                        open={Boolean(anchorEl)}
-                                        onClose={handleMenuClose}
-                                        sx={{ '& .MuiPaper-root': { borderRadius: 2, minWidth: 150 } }}
-                                    >
-                                        <MenuItem onClick={handleMenuClose}><Eye size={16} className="mr-2" /> View</MenuItem>
-                                        <MenuItem onClick={handleMenuClose}><Edit size={16} className="mr-2" /> Edit</MenuItem>
-                                        <MenuItem onClick={handleMenuClose} sx={{ color: 'error.main' }}>
-                                            <Trash2 size={16} className="mr-2" /> Delete
-                                        </MenuItem>
-                                    </Menu>
+                        {loading ? (
+                            <TableRow>
+                                <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
+                                    <CircularProgress />
                                 </TableCell>
                             </TableRow>
-                        ))}
+                        ) : franchises.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
+                                    <Typography variant="body1" color="text.secondary">
+                                        No franchises found.
+                                    </Typography>
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            franchises.map((row) => {
+                                const isActive = row.isActive === true || row.isActive === 'true' || row.status === 'Active';
+                                const rowId = row._id || row.id;
+                                return (
+                                    <TableRow key={rowId} hover>
+                                        <TableCell>{row.franchiseId || row.id || (row._id && row._id.slice(-6).toUpperCase())}</TableCell>
+                                        <TableCell>
+                                            <Typography variant="subtitle2" fontWeight="600">{row.name || row.franchiseName || 'N/A'}</Typography>
+                                            <Typography variant="body2" color="text.secondary">{row.phone || row.mobileNumber || 'N/A'}</Typography>
+                                        </TableCell>
+                                        <TableCell>{row.owner || row.ownerName || 'N/A'}</TableCell>
+                                        <TableCell>{row.city || row.location?.city || 'N/A'}</TableCell>
+                                        <TableCell>
+                                            <Chip
+                                                label={isActive ? 'Active' : 'Inactive'}
+                                                size="small"
+                                                sx={{
+                                                    bgcolor: isActive ? '#e8f5e9' : '#ffebee',
+                                                    color: isActive ? '#2e7d32' : '#c62828',
+                                                    fontWeight: 600
+                                                }}
+                                            />
+                                        </TableCell>
+                                        <TableCell align="right">
+                                            <IconButton onClick={(e) => handleMenuClick(e, rowId)} size="small">
+                                                <MoreVertical size={18} />
+                                            </IconButton>
+                                            <Menu
+                                                anchorEl={anchorEl && selectedFranchiseId === rowId ? anchorEl : null}
+                                                open={Boolean(anchorEl && selectedFranchiseId === rowId)}
+                                                onClose={handleMenuClose}
+                                                sx={{ '& .MuiPaper-root': { borderRadius: 2, minWidth: 150 } }}
+                                            >
+                                                <MenuItem onClick={handleMenuClose}><Eye size={16} className="mr-2" /> View</MenuItem>
+                                                <MenuItem onClick={handleMenuClose}><Edit size={16} className="mr-2" /> Edit</MenuItem>
+                                                <MenuItem onClick={handleMenuClose} sx={{ color: 'error.main' }}>
+                                                    <Trash2 size={16} className="mr-2" /> Delete
+                                                </MenuItem>
+                                            </Menu>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })
+                        )}
                     </TableBody>
                 </Table>
             </TableContainer>
@@ -110,7 +170,7 @@ export default function FranchiseList() {
             <TablePagination
                 rowsPerPageOptions={[5, 10, 25]}
                 component="div"
-                count={mockFranchises.length}
+                count={totalCount}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 onPageChange={handleChangePage}

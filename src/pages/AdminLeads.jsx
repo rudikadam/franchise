@@ -7,13 +7,7 @@ import {
 import { Search, Filter, MoreVertical, Eye, Edit, UserCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const mockLeads = [
-    { id: 'L-5001', customer: 'Rahul Sharma', vehicle: 'Tata Harrier XT+ (2021)', franchise: 'Metro Motors', assignedTo: 'Unassigned', status: 'New', date: '22 Aug 2026' },
-    { id: 'L-5002', customer: 'Amit Singh', vehicle: 'Hyundai Creta SX (2022)', franchise: 'North India Auto', assignedTo: 'John Doe', status: 'In Process', date: '21 Aug 2026' },
-    { id: 'L-5003', customer: 'Priya Patel', vehicle: 'Maruti Baleno Alpha (2020)', franchise: 'South Cars Hub', assignedTo: 'Jane Smith', status: 'Highest Bid Received', date: '20 Aug 2026' },
-    { id: 'L-5004', customer: 'Sanjay Das', vehicle: 'Kia Seltos HTX (2023)', franchise: 'East Side Wheels', assignedTo: 'John Doe', status: 'Price Updated', date: '19 Aug 2026' },
-    { id: 'L-5005', customer: 'Vikas Dubey', vehicle: 'Honda City VX (2019)', franchise: 'Metro Motors', assignedTo: 'Jane Smith', status: 'Inspection Pending', date: '18 Aug 2026' },
-];
+const mockLeads = [];
 
 const getStatusColor = (status) => {
     switch (status) {

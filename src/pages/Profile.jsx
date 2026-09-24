@@ -1,7 +1,11 @@
+import { useState, useEffect } from 'react';
 import { Box, Card, Typography, Avatar, Grid, Button, Divider, IconButton } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 import { Mail, Phone, MapPin, Building2, Calendar, ArrowLeft, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import apiClient from '../services/apiClient';
+import Loader from '../components/common/Loader';
+import axios from 'axios';
 
 const glassCardStyle = {
     background: 'rgba(255, 255, 255, 0.65)',
@@ -15,6 +19,35 @@ const glassCardStyle = {
 export default function Profile() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const [profileData, setProfileData] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const token = localStorage.getItem("adminToken") || localStorage.getItem("token");
+                const res = await axios.get(
+                    `${import.meta.env.VITE_API_URL || 'https://api.bidndrive.in'}/api/admin/profile`,
+                    {
+                        headers: { Authorization: `Bearer ${token}` }
+                    }
+                );
+                setProfileData(res.data.data);
+            } catch (err) {
+                console.error("Error fetching profile:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProfile();
+    }, []);
+
+    if (loading) {
+        return <Loader />;
+    }
+
+    const profile = profileData || {};
 
     return (
         <Box>
@@ -43,14 +76,14 @@ export default function Profile() {
                             color: '#fff'
                         }}
                     >
-                        {user?.name?.charAt(0) || 'U'}
+                        {(profile?.name || user?.name)?.charAt(0) || 'U'}
                     </Avatar>
                     <Box sx={{ pt: 2, flexGrow: 1 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                             <Box>
-                                <Typography variant="h5" fontWeight="bold">{user?.name || 'My Profile'}</Typography>
+                                <Typography variant="h5" fontWeight="bold">{profile?.firstName} {profile?.lastName}</Typography>
                                 <Typography variant="subtitle1" color="rgba(0,0,0,0.6)" sx={{ textTransform: 'capitalize' }}>
-                                    {user?.role || 'Role'} Account
+                                    {profile?.role || user?.role} Account
                                 </Typography>
                             </Box>
                             <Button sx={{
@@ -74,24 +107,26 @@ export default function Profile() {
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                 <Mail size={20} color="rgba(0,0,0,0.6)" />
-                                <Typography>user@franchise.com</Typography>
+                                <Typography>{profile?.email}</Typography>
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                 <Phone size={20} color="rgba(0,0,0,0.6)" />
-                                <Typography>+91 98765 43210</Typography>
+                                <Typography>{profile?.phone}</Typography>
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                 <MapPin size={20} color="rgba(0,0,0,0.6)" />
-                                <Typography>Mumbai, India</Typography>
+                                <Typography>{profile?.city || profile?.address}</Typography>
                             </Box>
                             <Divider sx={{ borderColor: 'rgba(0,0,0,0.1)' }} />
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                 <Building2 size={20} color="rgba(0,0,0,0.6)" />
-                                <Typography>Metro Motors</Typography>
+                                <Typography>{profile?.businessName || profile?.franchiseName}</Typography>
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                 <Calendar size={20} color="rgba(0,0,0,0.6)" />
-                                <Typography>Joined Jan 2026</Typography>
+                                {profile?.createdAt && (
+                                    <Typography>Joined {new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</Typography>
+                                )}
                             </Box>
                         </Box>
                     </Card>
@@ -118,12 +153,16 @@ export default function Profile() {
                         <Divider sx={{ my: 3, borderColor: 'rgba(0,0,0,0.1)' }} />
 
                         <Box>
-                            <Typography variant="subtitle1" fontWeight="bold" color="error">Logout of Account</Typography>
-                            <Typography variant="body2" sx={{ color: 'rgba(0,0,0,0.5)' }} mb={2}>End your current session securely.</Typography>
                             <Button
                                 variant="contained"
                                 color="error"
-                                onClick={logout}
+                                onClick={() => {
+                                    localStorage.removeItem("adminToken");
+                                    localStorage.removeItem("role");
+                                    localStorage.removeItem("adminRefreshToken");
+                                    logout();
+                                    navigate("/");
+                                }}
                                 startIcon={<LogOut size={18} />}
                                 sx={{
                                     borderRadius: '16px',

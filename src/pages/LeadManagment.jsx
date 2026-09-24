@@ -7,11 +7,7 @@ import {
 import { Search, Filter, MoreVertical, Eye, Edit, UserCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const mockLeads = [
-    { id: 'E-5011', completedAt: '25 Aug 2026, 10:30 AM', vehicle: 'Toyota Fortuner', year: '2020', topBid: '₹14,50,000 / 3 Bids', setTarget: '₹15,00,000', fuel: 'Diesel', remainingTime: '2h 15m', status: 'In Process' },
-    { id: 'E-5012', completedAt: '24 Aug 2026, 02:15 PM', vehicle: 'Maruti Swift', year: '2021', topBid: '₹5,20,000 / 5 Bids', setTarget: '₹5,50,000', fuel: 'Petrol', remainingTime: '1d 4h', status: 'New' },
-    { id: 'E-5013', completedAt: '23 Aug 2026, 11:45 AM', vehicle: 'Honda Amaze', year: '2022', topBid: '₹6,10,000 / 2 Bids', setTarget: '₹6,50,000', fuel: 'Petrol', remainingTime: '3h 30m', status: 'Highest Bid Received' },
-];
+const mockLeads = [];
 
 const getStatusColor = (status) => {
     switch (status) {

@@ -6,11 +6,11 @@ import {
 const statCards = [
     { title: 'Total Enquiries', value: '142', icon: <FileText />, color: '#5e35b1', bg: 'rgba(94, 53, 177, 0.15)' },
     { title: 'New Enquiries', value: '12', icon: <PlusSquare />, color: '#1e88e5', bg: 'rgba(30, 136, 229, 0.15)' },
-    { title: 'In Process', value: '28', icon: <Clock />, color: '#fb8c00', bg: 'rgba(251, 140, 0, 0.15)' },
-    { title: 'Bidding In Progress', value: '15', icon: <Gavel />, color: '#8e24aa', bg: 'rgba(142, 36, 170, 0.15)' },
-    { title: 'Highest Bid Received', value: '10', icon: <CheckCircle />, color: '#00897b', bg: 'rgba(0, 137, 123, 0.15)' },
+    // { title: 'In Process', value: '28', icon: <Clock />, color: '#fb8c00', bg: 'rgba(251, 140, 0, 0.15)' },
+    // { title: 'Bidding In Progress', value: '15', icon: <Gavel />, color: '#8e24aa', bg: 'rgba(142, 36, 170, 0.15)' },
+    // { title: 'Highest Bid Received', value: '10', icon: <CheckCircle />, color: '#00897b', bg: 'rgba(0, 137, 123, 0.15)' },
     { title: 'Price Updated', value: '25', icon: <IndianRupee />, color: '#43a047', bg: 'rgba(67, 160, 71, 0.15)' },
-    { title: 'Sold Vehicles', value: '45', icon: <CarFront />, color: '#3949ab', bg: 'rgba(57, 73, 171, 0.15)' },
+    // { title: 'Sold Vehicles', value: '45', icon: <CarFront />, color: '#3949ab', bg: 'rgba(57, 73, 171, 0.15)' },
     { title: 'Cancelled Enquiries', value: '7', icon: <XCircle />, color: '#e53935', bg: 'rgba(229, 57, 53, 0.15)' },
 ];
 

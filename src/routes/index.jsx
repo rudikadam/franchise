@@ -11,6 +11,8 @@ import Login from '../pages/Login';
 import LeadManagment from '../pages/LeadManagment';
 import RejectedLeads from '../pages/RejectedLeads';
 import CloseLeads from '../pages/CloseLeads';
+import FranchiseList from '../pages/Franchise/FranchiseList';
+import CreateFranchise from '../pages/Franchise/CreateFranchise';
 export default function AppRoutes() {
     return (
         <Routes>
@@ -29,7 +31,8 @@ export default function AppRoutes() {
                 <Route path="/closed-leads" element={<ProtectedRoute roles={['franchise', 'admin', 'manager']}><CloseLeads /></ProtectedRoute>} />
 
                 {/* Admin/Manager Routes */}
-                <Route path="/admin/franchises" element={<ProtectedRoute roles={['admin', 'manager', 'super-admin']}><div className="p-6 h-full text-2xl font-bold flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg">Franchises Management (Admin)</div></ProtectedRoute>} />
+                <Route path="/admin/franchises" element={<ProtectedRoute roles={['admin', 'manager', 'super-admin']}><FranchiseList /></ProtectedRoute>} />
+                <Route path="/admin/franchises/create" element={<ProtectedRoute roles={['admin', 'manager', 'super-admin']}><CreateFranchise /></ProtectedRoute>} />
                 <Route path="/admin/leads" element={<ProtectedRoute roles={['admin', 'manager', 'super-admin']}><AdminLeads /></ProtectedRoute>} />
                 <Route path="/admin/users" element={<ProtectedRoute roles={['admin', 'super-admin']}><div className="p-6 h-full text-2xl font-bold flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg">Users Management (Admin)</div></ProtectedRoute>} />
 

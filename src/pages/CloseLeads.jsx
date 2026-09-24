@@ -6,11 +6,7 @@ import {
 } from '@mui/material';
 import { Search, Filter, Eye } from 'lucide-react';
 
-const mockLeads = [
-    { id: 'D-7001', buyer: 'Arjun Das', car: 'Kia Sonet (2022)', price: '₹6,50,000', type: 'Dealer', closedOn: '21 Aug 2026', days: 5, status: 'Closed' },
-    { id: 'D-7002', buyer: 'Neha Malik', car: 'Mahindra Thar (2021)', price: '₹12,20,000', type: 'Direct', closedOn: '18 Aug 2026', days: 2, status: 'Closed' },
-    { id: 'D-7003', buyer: 'Vikas Sharma', car: 'Hyundai Verna (2019)', price: '₹5,80,000', type: 'Dealer', closedOn: '12 Aug 2026', days: 8, status: 'Closed' },
-];
+const mockLeads = [];
 
 export default function CloseLeads() {
     const [page, setPage] = useState(0);

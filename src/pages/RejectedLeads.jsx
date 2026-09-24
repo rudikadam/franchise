@@ -6,11 +6,7 @@ import {
 } from '@mui/material';
 import { Search, Filter, Eye } from 'lucide-react';
 
-const mockLeads = [
-    { id: 'L-6001', customer: 'Karan Singh', vehicle: 'Hyundai i20 (2018)', franchise: 'West Side Wheels', reason: 'Customer not interested', status: 'Rejected', date: '20 Aug 2026' },
-    { id: 'L-6002', customer: 'Pooja Verma', vehicle: 'Maruti Alto (2015)', franchise: 'Metro Motors', reason: 'High price expectation', status: 'Rejected', date: '19 Aug 2026' },
-    { id: 'L-6003', customer: 'Ravi Kumar', vehicle: 'Honda Civic (2012)', franchise: 'South Cars Hub', reason: 'Vehicle severely damaged', status: 'Rejected', date: '15 Aug 2026' },
-];
+const mockLeads = [];
 
 export default function RejectedLeads() {
     const [page, setPage] = useState(0);

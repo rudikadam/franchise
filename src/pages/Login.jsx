@@ -1,82 +1,153 @@
 import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-
+import apiClient from '../services/apiClient';
 export default function Login() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const { login } = useAuth();
-    const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        login('franchise');
-        navigate('/dashboard');
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
-    return (
-        <div className="lg-body">
-            <div className="lg-bg">
-                <div className="lg-blob lg-b1" />
-                <div className="lg-blob lg-b2" />
-                <div className="lg-blob lg-b3" />
-                <div className="lg-blob lg-b4" />
+    try {
+      const response = await apiClient.post('api/franchise/login', { email, password });
+
+      // Expected to return accessToken & refreshToken
+      if (response.data && response.data.accessToken) {
+        // Adjust this depending on your AuthContext / apiClient setup
+        localStorage.setItem('token', response.data.accessToken);
+        localStorage.setItem('refreshToken', response.data.refreshToken);
+      }
+
+      login('franchise');
+      navigate('/dashboard');
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        setError('Invalid email or password');
+      } else if (err.response && err.response.status === 403) {
+        setError('Franchise account is disabled');
+      } else {
+        setError(err.response?.data?.message || 'Login failed. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="lg-body">
+      <div className="lg-bg">
+        <div className="lg-blob lg-b1" />
+        <div className="lg-blob lg-b2" />
+        <div className="lg-blob lg-b3" />
+        <div className="lg-blob lg-b4" />
+      </div>
+
+      <div className="lg-stage">
+        <div className="lg-brand">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#4285f4" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: '24px', height: '24px' }}>
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <span>Sign in</span>
+        </div>
+
+        <div className="lg-card">
+          <h1>Welcome back</h1>
+          <p className="lg-sub">Sign in to pick up where you left off.</p>
+
+          <form onSubmit={handleSubmit}>
+            {error && <div className="lg-error" style={{ color: '#ea4335', marginBottom: '16px', textAlign: 'center', fontSize: '14px', background: 'rgba(234, 67, 53, 0.1)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(234, 67, 53, 0.2)' }}>{error}</div>}
+            <div className="lg-field">
+              <input
+                type="email"
+                placeholder="Email address"
+                required
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div className="lg-field">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                required
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={{ paddingRight: '44px' }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                title={showPassword ? "Hide password" : "Show password"}
+                style={{
+                  position: 'absolute',
+                  right: '14px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: 'inherit',
+                  opacity: 0.6,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: 0,
+                  outline: 'none',
+                  transition: 'opacity 0.2s'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.opacity = 1}
+                onMouseOut={(e) => e.currentTarget.style.opacity = 0.6}
+              >
+                {showPassword ? (
+                  <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                )}
+              </button>
+            </div>
+            <div className="lg-row">
+              <a href="#forgot">Forgot password?</a>
             </div>
 
-            <div className="lg-stage">
-                <div className="lg-brand">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#4285f4" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: '24px', height: '24px' }}>
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                    </svg>
-                    <span>Sign in</span>
-                </div>
+            <button type="submit" className="lg-ai-btn" disabled={loading}>
+              {loading ? (
+                <span>Loading...</span>
+              ) : (
+                <>
+                  <svg className="lg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                  Continue
+                </>
+              )}
+            </button>
+          </form>
 
-                <div className="lg-card">
-                    <h1>Welcome back</h1>
-                    <p className="lg-sub">Sign in to pick up where you left off.</p>
+          <p className="lg-foot">
+            Don&apos;t have an account?
+          </p>
+        </div>
+      </div>
 
-                    <form onSubmit={handleSubmit}>
-                        <div className="lg-field">
-                            <input
-                                type="email"
-                                placeholder="Email address"
-                                required
-                                autoComplete="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                            />
-                        </div>
-                        <div className="lg-field">
-                            <input
-                                type="password"
-                                placeholder="Password"
-                                required
-                                autoComplete="current-password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                            />
-                        </div>
-                        <div className="lg-row">
-                            <a href="#forgot">Forgot password?</a>
-                        </div>
-
-                        <button type="submit" className="lg-ai-btn">
-                            <svg className="lg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="11" cy="11" r="8"></circle>
-                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                            </svg>
-                            Continue
-                        </button>
-                    </form>
-
-                    <p className="lg-foot">
-                        Don&apos;t have an account? 
-                    </p>
-                </div>
-            </div>
-
-            <style>{`
+      <style>{`
         .lg-body{
           --ink:#f5f5f7;
           --muted:rgba(245,245,247,.65);
@@ -295,6 +366,6 @@ export default function Login() {
           }
         }
       `}</style>
-        </div>
-    );
+    </div>
+  );
 }

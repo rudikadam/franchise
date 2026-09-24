@@ -7,12 +7,7 @@ import {
 import { Search, Plus, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const mockEnquiries = [
-    { id: 'BND-10025', customer: 'Rahul Sharma', vehicle: 'Tata Harrier XT+ (2021)', status: 'Price Updated', highestBid: '₹4,50,000', lastUpdated: '18 Aug 2026, 12:30 PM' },
-    { id: 'BND-10026', customer: 'Amit Singh', vehicle: 'Hyundai Creta SX (2022)', status: 'Bidding In Progress', highestBid: '₹8,20,000', lastUpdated: '19 Aug 2026, 10:15 AM' },
-    { id: 'BND-10027', customer: 'Priya Patel', vehicle: 'Maruti Baleno Alpha (2020)', status: 'In Process', highestBid: 'N/A', lastUpdated: '20 Aug 2026, 09:00 AM' },
-    { id: 'BND-10028', customer: 'Sanjay Das', vehicle: 'Kia Seltos HTX (2023)', status: 'New', highestBid: 'N/A', lastUpdated: '21 Aug 2026, 11:45 AM' },
-];
+const mockEnquiries = [];
 
 const getStatusColor = (status) => {
     switch (status) {
