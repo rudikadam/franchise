@@ -29,6 +29,7 @@ export default function MyEnquiries() {
     const [type, setType] = useState('all');
     const [statusFilter, setStatusFilter] = useState('');
     const [loading, setLoading] = useState(true);
+    const [franchisesList, setFranchisesList] = useState([]);
 
     const fetchEnquiries = async () => {
         setLoading(true);
@@ -62,6 +63,41 @@ export default function MyEnquiries() {
         }, 300); // debounce search
         return () => clearTimeout(timeoutId);
     }, [page, rowsPerPage, search, type, statusFilter]);
+
+    useEffect(() => {
+        const fetchAllFranchises = async () => {
+            try {
+                const token = localStorage.getItem("token");
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/franchise/admin/all`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                    params: { limit: 100 }
+                });
+                const data = response.data?.data || response.data?.franchises || response.data || [];
+                setFranchisesList(Array.isArray(data) ? data : []);
+            } catch (err) {
+                console.error("Error fetching franchises for dropdown:", err);
+            }
+        };
+        fetchAllFranchises();
+    }, []);
+
+    const handleAssign = async (enquiryId, franchiseId) => {
+        if (!franchiseId) return;
+        try {
+            const token = localStorage.getItem("token");
+            await axios.put(
+                `${import.meta.env.VITE_API_URL}/api/franchise/admin/assign/${enquiryId}/${franchiseId}`,
+                {},
+                {
+                    headers: { Authorization: `Bearer ${token}` }
+                }
+            );
+            fetchEnquiries();
+        } catch (err) {
+            console.error("Error assigning franchise:", err);
+            alert(err.response?.data?.message || "Failed to assign franchise. You might not have admin permissions.");
+        }
+    };
 
     const handleChangePage = (event, newPage) => setPage(newPage);
     const handleChangeRowsPerPage = (event) => {
@@ -146,30 +182,38 @@ export default function MyEnquiries() {
                                 const id = row._id || row.id;
                                 const customer = row.customerName || row.customer || 'Unknown';
                                 const vehicle = row.vehicleName || row.vehicle || 'Unknown';
-                                const assignedTo = row.assignedToName || (typeof row.assignedTo === 'object' ? (row.assignedTo?.name || row.assignedTo?.firstName || 'Assigned') : row.assignedTo) || 'Unassigned';
+
+                                const assignedToId = (typeof row.assignedTo === 'object' && row.assignedTo) ? (row.assignedTo._id || row.assignedTo.id) : (row.assignedTo && typeof row.assignedTo === 'string' ? row.assignedTo : '');
+                                const assignedToName = row.assignedToName || (typeof row.assignedTo === 'object' && row.assignedTo ? (row.assignedTo.name || row.assignedTo.firstName || row.assignedTo.franchiseName) : null) || 'Unassigned';
+
                                 const highestBid = row.highestBid || 'N/A';
                                 const lastUpdated = row.updatedAt ? new Date(row.updatedAt).toLocaleDateString() : (row.lastUpdated || 'N/A');
 
                                 return (
                                     <TableRow key={id} hover>
-                                        <TableCell fontWeight="600">{row.enquiryId || id.slice(-6)}</TableCell>
+                                        <TableCell sx={{ fontWeight: '600' }}>{row.enquiryId || id.slice(-6)}</TableCell>
                                         <TableCell>{customer}</TableCell>
                                         <TableCell>{vehicle}</TableCell>
                                         <TableCell>
                                             <FormControl size="small" sx={{ minWidth: 120 }}>
                                                 <Select
-                                                    value={assignedTo}
-                                                    onChange={(e) => console.log(`Assign enquiry ${id} to`, e.target.value)}
+                                                    value={assignedToId}
+                                                    onChange={(e) => handleAssign(id, e.target.value)}
                                                     displayEmpty
                                                     sx={{
                                                         '& .MuiSelect-select': { py: 0.5, fontSize: '0.875rem' },
                                                         borderRadius: 1
                                                     }}
                                                 >
-                                                    {/* We use a Set to ensure unique values, starting with the current assignee */}
-                                                    {[...new Set([assignedTo, 'Unassigned', 'John Doe', 'Jane Smith', 'Evaluator 1'])].map(name => (
-                                                        <MenuItem key={name} value={name}>{name}</MenuItem>
+                                                    <MenuItem value=""><em>Unassigned</em></MenuItem>
+                                                    {franchisesList.map(f => (
+                                                        <MenuItem key={f._id || f.id} value={f._id || f.id}>
+                                                            {f.name || f.franchiseName || f.firstName}
+                                                        </MenuItem>
                                                     ))}
+                                                    {assignedToId && !franchisesList.some(f => (f._id || f.id) === assignedToId) && (
+                                                        <MenuItem value={assignedToId}>{assignedToName !== 'Unassigned' ? assignedToName : 'Unknown Franchise'}</MenuItem>
+                                                    )}
                                                 </Select>
                                             </FormControl>
                                         </TableCell>
