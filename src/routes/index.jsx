@@ -14,6 +14,8 @@ import CloseLeads from '../pages/CloseLeads';
 import FranchiseList from '../pages/Franchise/FranchiseList';
 import CreateFranchise from '../pages/Franchise/CreateFranchise';
 import Notifications from '../pages/Notifications';
+import FranchiseCars from '../pages/FranchiseCars';
+import CarEnquiries from '../pages/CarEnquiries';
 
 export default function AppRoutes() {
     return (
@@ -26,6 +28,8 @@ export default function AppRoutes() {
                 <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
 
                 {/* Franchise Routes */}
+                <Route path="/franchise-cars" element={<ProtectedRoute roles={['franchise']}><FranchiseCars /></ProtectedRoute>} />
+                <Route path="/car-enquiries" element={<ProtectedRoute roles={['franchise']}><CarEnquiries /></ProtectedRoute>} />
                 <Route path="/enquiries/create" element={<ProtectedRoute roles={['franchise', 'admin', 'manager', 'super-admin']}><CreateEnquiry /></ProtectedRoute>} />
                 <Route path="/enquiries" element={<ProtectedRoute roles={['franchise']}><MyEnquiries /></ProtectedRoute>} />
                 <Route path="/enquiries/:id" element={<ProtectedRoute><EnquiryDetails /></ProtectedRoute>} />

@@ -25,6 +25,7 @@ export default function Profile() {
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [editData, setEditData] = useState({});
     const [saving, setSaving] = useState(false);
+    const [updatingLocation, setUpdatingLocation] = useState(false);
 
     const fetchProfile = async () => {
         try {
@@ -83,6 +84,50 @@ export default function Profile() {
         } finally {
             setSaving(false);
         }
+    };
+
+    const handleUpdateLocation = () => {
+        if ("geolocation" in navigator) {
+            setUpdatingLocation(true);
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    try {
+                        const token = localStorage.getItem("token");
+                        await axios.put(
+                            `${import.meta.env.VITE_API_URL}/api/franchise/location`,
+                            {
+                                latitude: position.coords.latitude,
+                                longitude: position.coords.longitude
+                            },
+                            { headers: { Authorization: `Bearer ${token}` } }
+                        );
+                        alert("Location updated successfully!");
+                        await fetchProfile();
+                    } catch (err) {
+                        console.error("Error updating location:", err);
+                        alert("Failed to update location");
+                    } finally {
+                        setUpdatingLocation(false);
+                    }
+                },
+                (error) => {
+                    console.error("Geolocation error:", error);
+                    alert("Unable to retrieve your location. Please check browser permissions.");
+                    setUpdatingLocation(false);
+                }
+            );
+        } else {
+            alert("Geolocation is not supported by your browser");
+        }
+    };
+
+    const getGoogleMapsUrl = () => {
+        const lat = profileData?.latitude || profileData?.location?.coordinates?.[1] || profileData?.location?.latitude;
+        const lng = profileData?.longitude || profileData?.location?.coordinates?.[0] || profileData?.location?.longitude;
+        if (lat && lng) {
+            return `https://www.google.com/maps?q=${lat},${lng}`;
+        }
+        return null;
     };
 
     if (loading) {
@@ -192,6 +237,38 @@ export default function Profile() {
                             <Typography variant="subtitle1" fontWeight="bold">Change Password</Typography>
                             <Typography variant="body2" sx={{ color: 'rgba(0,0,0,0.5)' }} mb={2}>Update your password regularly to keep your account secure.</Typography>
                             <Button sx={{ borderRadius: '16px' }} variant="outlined" color="primary">Update Password</Button>
+                        </Box>
+
+                        <Divider sx={{ my: 3, borderColor: 'rgba(0,0,0,0.1)' }} />
+
+                        <Box mb={4}>
+                            <Typography variant="subtitle1" fontWeight="bold">Location Coordinates</Typography>
+                            <Typography variant="body2" sx={{ color: 'rgba(0,0,0,0.5)' }} mb={2}>Update your location coordinates directly from your device, or tap to see your current saved location.</Typography>
+                            <Box sx={{ display: 'flex', gap: 2 }}>
+                                <Button
+                                    sx={{ borderRadius: '16px' }}
+                                    variant="outlined"
+                                    color="primary"
+                                    onClick={handleUpdateLocation}
+                                    disabled={updatingLocation}
+                                >
+                                    {updatingLocation ? <CircularProgress size={20} sx={{ mr: 1 }} /> : null}
+                                    Map My Location
+                                </Button>
+                                {getGoogleMapsUrl() && (
+                                    <Button
+                                        sx={{ borderRadius: '16px' }}
+                                        variant="outlined"
+                                        color="secondary"
+                                        component="a"
+                                        href={getGoogleMapsUrl()}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        Tap to see location
+                                    </Button>
+                                )}
+                            </Box>
                         </Box>
 
                         <Divider sx={{ my: 3, borderColor: 'rgba(0,0,0,0.1)' }} />

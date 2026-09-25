@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Box, Drawer, List, ListItem, ListItemIcon, ListItemText, Typography, useTheme, IconButton, Avatar } from '@mui/material';
 import {
-    LayoutDashboard, PlusSquare, List as ListIcon, Bell, Users, Building2, Gavel, User, LogOut, FileText, XCircle, CheckCircle
+    LayoutDashboard, PlusSquare, List as ListIcon, Bell, Users, Building2, Gavel, User, LogOut, FileText, XCircle, CheckCircle, Car
 } from 'lucide-react';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useAuth } from '../../context/AuthContext';
@@ -27,6 +27,8 @@ const getMenuItems = (role) => {
     // Default Franchise Role
     return [
         { id: 'dashboard', title: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/dashboard' },
+        { id: 'franchise-cars', title: 'Franchise Cars', icon: <Car size={20} />, path: '/franchise-cars' },
+        { id: 'car-enquiries', title: 'Car Enquiries', icon: <ListIcon size={20} />, path: '/car-enquiries' },
         // { id: 'create-enquiry', title: 'Create Enquiry', icon: <PlusSquare size={20} />, path: '/enquiries/create' },
         { id: 'my-enquiries', title: 'My Enquiries', icon: <ListIcon size={20} />, path: '/enquiries' },
         { id: 'lead-management', title: 'Lead Management', icon: <FileText size={20} />, path: '/lead-management' },

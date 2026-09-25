@@ -45,7 +45,8 @@ export default function FranchiseList() {
                     }
                 });
 
-                const data = response.data?.data || response.data?.franchises || response.data || [];
+                const responseData = response.data?.data || response.data?.franchises || response.data || [];
+                const data = Array.isArray(responseData) ? responseData : [];
                 const total = response.data?.pagination?.total || response.data?.totalCount || response.data?.total || data.length || 0;
 
                 setFranchises(data);

@@ -29,7 +29,7 @@ export default function MyEnquiries() {
     const [type, setType] = useState('all');
     const [statusFilter, setStatusFilter] = useState('');
     const [loading, setLoading] = useState(true);
-    const [franchisesList, setFranchisesList] = useState([]);
+    const [techniciansList, setTechniciansList] = useState([]);
 
     const fetchEnquiries = async () => {
         setLoading(true);
@@ -48,8 +48,9 @@ export default function MyEnquiries() {
                     }
                 }
             );
-            setEnquiries(res.data?.data || res.data?.enquiries || []);
-            setTotalCount(res.data?.pagination?.total || res.data?.total || res.data?.totalCount || res.data?.data?.length || 0);
+            const enquiriesData = res.data?.data || res.data?.enquiries || res.data || [];
+            setEnquiries(Array.isArray(enquiriesData) ? enquiriesData : []);
+            setTotalCount(res.data?.pagination?.total || res.data?.total || res.data?.totalCount || (Array.isArray(enquiriesData) ? enquiriesData.length : 0));
         } catch (err) {
             console.error("Error fetching enquiries:", err);
         } finally {
@@ -65,37 +66,36 @@ export default function MyEnquiries() {
     }, [page, rowsPerPage, search, type, statusFilter]);
 
     useEffect(() => {
-        const fetchAllFranchises = async () => {
+        const fetchTechnicians = async () => {
             try {
                 const token = localStorage.getItem("token");
-                const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/franchise/admin/all`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                    params: { limit: 100 }
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/franchise/technicians`, {
+                    headers: { Authorization: `Bearer ${token}` }
                 });
-                const data = response.data?.data || response.data?.franchises || response.data || [];
-                setFranchisesList(Array.isArray(data) ? data : []);
+                const data = response.data?.data || response.data?.technicians || response.data || [];
+                setTechniciansList(Array.isArray(data) ? data : []);
             } catch (err) {
-                console.error("Error fetching franchises for dropdown:", err);
+                console.error("Error fetching technicians for dropdown:", err);
             }
         };
-        fetchAllFranchises();
+        fetchTechnicians();
     }, []);
 
-    const handleAssign = async (enquiryId, franchiseId) => {
-        if (!franchiseId) return;
+    const handleAssign = async (enquiryId, technicianId) => {
+        if (!technicianId) return;
         try {
             const token = localStorage.getItem("token");
             await axios.put(
-                `${import.meta.env.VITE_API_URL}/api/franchise/admin/assign/${enquiryId}/${franchiseId}`,
-                {},
+                `${import.meta.env.VITE_API_URL}/api/franchise/enquiries/${enquiryId}/assign-technician`,
+                { technicianId },
                 {
                     headers: { Authorization: `Bearer ${token}` }
                 }
             );
             fetchEnquiries();
         } catch (err) {
-            console.error("Error assigning franchise:", err);
-            alert(err.response?.data?.message || "Failed to assign franchise. You might not have admin permissions.");
+            console.error("Error assigning technician:", err);
+            alert(err.response?.data?.message || "Failed to assign technician.");
         }
     };
 
@@ -199,7 +199,7 @@ export default function MyEnquiries() {
 
                                 return (
                                     <TableRow key={id} hover>
-                                        <TableCell sx={{ fontWeight: '600' }}>{row.enquiryId || id.slice(-6)}</TableCell>
+                                        <TableCell sx={{ fontWeight: '600' }}>{row.enquiryId || (id ? String(id).slice(-6).toUpperCase() : '')}</TableCell>
                                         <TableCell>{customer}</TableCell>
                                         <TableCell>{vehicle}</TableCell>
                                         <TableCell>
@@ -214,13 +214,13 @@ export default function MyEnquiries() {
                                                     }}
                                                 >
                                                     <MenuItem value=""><em>Unassigned</em></MenuItem>
-                                                    {franchisesList.map(f => (
-                                                        <MenuItem key={f._id || f.id} value={f._id || f.id}>
-                                                            {f.name || f.franchiseName || f.firstName}
+                                                    {techniciansList.map(t => (
+                                                        <MenuItem key={t._id || t.id} value={t._id || t.id}>
+                                                            {t.name || t.firstName || t.technicianName}
                                                         </MenuItem>
                                                     ))}
-                                                    {assignedToId && !franchisesList.some(f => (f._id || f.id) === assignedToId) && (
-                                                        <MenuItem value={assignedToId}>{assignedToName !== 'Unassigned' ? assignedToName : 'Unknown Franchise'}</MenuItem>
+                                                    {assignedToId && !techniciansList.some(t => (t._id || t.id) === assignedToId) && (
+                                                        <MenuItem value={assignedToId}>{assignedToName !== 'Unassigned' ? assignedToName : 'Unknown Technician'}</MenuItem>
                                                     )}
                                                 </Select>
                                             </FormControl>
