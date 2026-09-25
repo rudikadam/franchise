@@ -90,7 +90,13 @@ export default function EnquiryDetails() {
     }
 
     const customerName = enquiry.customerName || "N/A";
-    const contactNumber = enquiry.contactNumber || enquiry.customerMobile || "N/A";
+    let contactNumber = enquiry.contactNumber || enquiry.customerMobile || "N/A";
+    if (contactNumber !== "N/A") {
+        const phoneStr = String(contactNumber);
+        contactNumber = phoneStr.length > 4
+            ? phoneStr.slice(0, 2) + "******" + phoneStr.slice(-2)
+            : phoneStr;
+    }
     const makeModel = car.model ? `${car.make || ""} ${car.model || ""}`.trim() : (enquiry.vehicleName || "N/A");
     const year = car.year || "N/A";
     const regNo = car.registrationNumber || "N/A";
