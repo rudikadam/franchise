@@ -181,7 +181,15 @@ export default function MyEnquiries() {
                                 // Default mapped fields since backend model might differ slightly
                                 const id = row._id || row.id;
                                 const customer = row.customerName || row.customer || 'Unknown';
-                                const vehicle = row.vehicleName || row.vehicle || 'Unknown';
+
+                                let carDetailsObj = row.carDetails;
+                                if (typeof carDetailsObj === 'string') {
+                                    try { carDetailsObj = JSON.parse(carDetailsObj); } catch (e) { }
+                                }
+                                const make = carDetailsObj?.make || '';
+                                const model = carDetailsObj?.model || '';
+                                const year = carDetailsObj?.year || '';
+                                const vehicle = [make, model, year].filter(Boolean).join(' ') || row.vehicleName || row.vehicle || 'Unknown';
 
                                 const assignedToId = (typeof row.assignedTo === 'object' && row.assignedTo) ? (row.assignedTo._id || row.assignedTo.id) : (row.assignedTo && typeof row.assignedTo === 'string' ? row.assignedTo : '');
                                 const assignedToName = row.assignedToName || (typeof row.assignedTo === 'object' && row.assignedTo ? (row.assignedTo.name || row.assignedTo.firstName || row.assignedTo.franchiseName) : null) || 'Unassigned';

@@ -1,7 +1,9 @@
 import { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const CreateEnquiry = ({ onSuccess, onClose }) => {
+    const navigate = useNavigate();
     const [rcNumber, setRcNumber] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
@@ -141,7 +143,7 @@ Address: ${data.present_address || "—"}
             setCreated(true);
             if (onSuccess) onSuccess();
             if (onClose) onClose();
-            window.location.reload();
+            navigate('/enquiries');
 
         } catch (err) {
             console.error("Create enquiry failed", err);
