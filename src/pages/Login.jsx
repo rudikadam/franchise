@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import apiClient from '../services/apiClient';
+import { registerFcmToken } from '../firebase';
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,6 +26,10 @@ export default function Login() {
 
       // Pass tokens to AuthContext login which will handle localStorage
       login('franchise', token, refreshToken);
+
+      // Register FCM token with backend
+      registerFcmToken(token);
+
       navigate('/dashboard');
     } catch (err) {
       if (err.response && err.response.status === 401) {

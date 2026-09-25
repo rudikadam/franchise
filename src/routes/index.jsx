@@ -13,6 +13,8 @@ import RejectedLeads from '../pages/RejectedLeads';
 import CloseLeads from '../pages/CloseLeads';
 import FranchiseList from '../pages/Franchise/FranchiseList';
 import CreateFranchise from '../pages/Franchise/CreateFranchise';
+import Notifications from '../pages/Notifications';
+
 export default function AppRoutes() {
     return (
         <Routes>
@@ -21,6 +23,7 @@ export default function AppRoutes() {
                 {/* Common Routes */}
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
 
                 {/* Franchise Routes */}
                 <Route path="/enquiries/create" element={<ProtectedRoute roles={['franchise', 'admin', 'manager', 'super-admin']}><CreateEnquiry /></ProtectedRoute>} />

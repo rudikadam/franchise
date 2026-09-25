@@ -1,15 +1,47 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import Breadcrumb from './Breadcrumb';
-import { Box } from '@mui/material';
+import { Box, Snackbar, Alert, Typography } from '@mui/material';
+import { onForegroundMessage, registerFcmToken } from '../../firebase';
+import { useAuth } from '../../context/AuthContext';
 
 export default function MainLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [notificationData, setNotificationData] = useState({ title: '', body: '' });
 
     const toggleSidebar = () => {
         setSidebarOpen(!sidebarOpen);
+    };
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            registerFcmToken(token);
+        }
+    }, []);
+
+    useEffect(() => {
+        const unsubscribe = onForegroundMessage((payload) => {
+            if (payload?.notification) {
+                setNotificationData({
+                    title: payload.notification.title || 'New Notification',
+                    body: payload.notification.body || ''
+                });
+                setSnackbarOpen(true);
+            }
+        });
+
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
+    }, []);
+
+    const handleCloseSnackbar = (event, reason) => {
+        if (reason === 'clickaway') return;
+        setSnackbarOpen(false);
     };
 
     return (
@@ -46,6 +78,19 @@ export default function MainLayout() {
                 @keyframes lgFloat2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-3vmax,-4vmax) scale(1.1); } }
                 @keyframes lgFloat3 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(3vmax,-2vmax) scale(1.05); } }
             `}</style>
+
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={6000}
+                onClose={handleCloseSnackbar}
+                anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                sx={{ top: { xs: 80, sm: 90 } }}
+            >
+                <Alert onClose={handleCloseSnackbar} severity="info" sx={{ width: '100%', boxShadow: 3, borderRadius: 2 }}>
+                    <Typography variant="subtitle2" fontWeight="bold">{notificationData.title}</Typography>
+                    <Typography variant="body2">{notificationData.body}</Typography>
+                </Alert>
+            </Snackbar>
 
             <Box sx={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
                 <Navbar toggleSidebar={toggleSidebar} />

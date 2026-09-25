@@ -76,14 +76,17 @@ export default function Navbar({ toggleSidebar }) {
                 </Box>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <IconButton sx={{
-                        color: '#333',
-                        borderRadius: '16px',
-                        backgroundColor: 'rgba(0,0,0,0.03)',
-                        border: '1px solid rgba(0,0,0,0.05)',
-                        transition: 'all 0.3s',
-                        '&:hover': { backgroundColor: 'rgba(0,0,0,0.08)' }
-                    }}>
+                    <IconButton
+                        onClick={() => navigate('/notifications')}
+                        sx={{
+                            color: '#333',
+                            borderRadius: '16px',
+                            backgroundColor: 'rgba(0,0,0,0.03)',
+                            border: '1px solid rgba(0,0,0,0.05)',
+                            transition: 'all 0.3s',
+                            '&:hover': { backgroundColor: 'rgba(0,0,0,0.08)' }
+                        }}
+                    >
                         <NotificationsIcon />
                     </IconButton>
 
